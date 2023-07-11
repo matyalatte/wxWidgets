@@ -116,7 +116,9 @@ public:
 
     wxString AsString() const;
 
+#if wxUSE_FFILE
     wxString GetDataFile() const;
+#endif
 
 protected:
     // Ctor is used by wxWebRequest and wxWebRequestImpl.

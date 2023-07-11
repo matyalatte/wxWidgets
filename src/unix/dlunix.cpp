@@ -171,6 +171,7 @@ wxDynamicLibraryDetailsArray wxDynamicLibrary::ListLoaded()
     wxDynamicLibraryDetailsArray dlls;
 
 #ifdef __LINUX__
+#if wxUSE_FFILE
     // examine /proc/self/maps to find out what is loaded in our address space
     wxFFile file(wxT("/proc/self/maps"));
     if ( file.IsOpened() )
@@ -232,6 +233,7 @@ wxDynamicLibraryDetailsArray wxDynamicLibrary::ListLoaded()
             }
         }
     }
+#endif // wxUSE_FFILE
 #endif // __LINUX__
 
     return dlls;

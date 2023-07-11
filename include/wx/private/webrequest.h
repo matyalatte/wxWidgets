@@ -10,7 +10,9 @@
 #ifndef _WX_PRIVATE_WEBREQUEST_H_
 #define _WX_PRIVATE_WEBREQUEST_H_
 
+#if wxUSE_FFILE
 #include "wx/ffile.h"
+#endif
 
 #include "wx/private/refcountermt.h"
 
@@ -180,7 +182,9 @@ public:
 
     wxString AsString() const;
 
+#if wxUSE_FFILE
     virtual wxString GetDataFile() const;
+#endif
 
 protected:
     wxWebRequestImpl& m_request;
@@ -203,10 +207,15 @@ protected:
 private:
     // Called by wxWebRequestImpl only.
     friend class wxWebRequestImpl;
+#if wxUSE_FFILE
     void Finalize();
+#endif
 
     wxMemoryBuffer m_readBuffer;
+
+#if wxUSE_FFILE
     mutable wxFFile m_file;
+#endif
     mutable std::unique_ptr<wxInputStream> m_stream;
 
     wxDECLARE_NO_COPY_CLASS(wxWebResponseImpl);

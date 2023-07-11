@@ -351,17 +351,21 @@ void wxWebRequestImpl::ProcessStateEvent(wxWebRequest::State state, const wxStri
             break;
 
         case wxWebRequest::State_Completed:
+#if wxUSE_FFILE
             if ( m_storage == wxWebRequest::Storage_File )
             {
                 dataFile = response->GetDataFile();
                 evt.SetDataFile(dataFile);
             }
+#endif // wxUSE_FFILE
             wxFALLTHROUGH;
 
         case wxWebRequest::State_Failed:
         case wxWebRequest::State_Cancelled:
+#if wxUSE_FFILE
             if ( response )
                 response->Finalize();
+#endif
 
             release = true;
             break;
@@ -611,14 +615,17 @@ wxWebResponseImpl::wxWebResponseImpl(wxWebRequestImpl& request) :
 
 wxWebResponseImpl::~wxWebResponseImpl()
 {
+#if wxUSE_FFILE
     if ( wxFileExists(m_file.GetName()) )
         wxRemoveFile(m_file.GetName());
+#endif
 }
 
 void wxWebResponseImpl::Init()
 {
     if ( m_request.GetStorage() == wxWebRequest::Storage_File )
     {
+#if wxUSE_FFILE
         wxFileName tmpPrefix;
         tmpPrefix.AssignDir(m_request.GetSession().GetTempDir());
         if ( GetContentLength() > 0 )
@@ -635,6 +642,9 @@ void wxWebResponseImpl::Init()
 
         tmpPrefix.SetName("wxd");
         wxFileName::CreateTempFileName(tmpPrefix.GetFullPath(), &m_file);
+#else
+        m_request.SetState(wxWebRequest::State_Failed, _("wxFFile is unavailable."));
+#endif // wxUSE_FFILE
     }
 }
 
@@ -659,9 +669,11 @@ wxInputStream * wxWebResponseImpl::GetStream() const
                 m_stream.reset(new wxMemoryInputStream(m_readBuffer.GetData(), m_readBuffer.GetDataLen()));
                 break;
             case wxWebRequest::Storage_File:
+#if wxUSE_FFILE
                 m_stream.reset(new wxFFileInputStream(m_file));
                 m_stream->SeekI(0);
                 break;
+#endif // wxUSE_FFILE
             case wxWebRequest::Storage_None:
                 // No stream available
                 break;
@@ -736,8 +748,10 @@ void wxWebResponseImpl::ReportDataReceived(size_t sizeReceived)
             break;
 
         case wxWebRequest::Storage_File:
+#if wxUSE_FFILE
             m_file.Write(m_readBuffer.GetData(), m_readBuffer.GetDataLen());
             m_readBuffer.Clear();
+#endif
             break;
 
         case wxWebRequest::Storage_None:
@@ -759,6 +773,7 @@ void wxWebResponseImpl::ReportDataReceived(size_t sizeReceived)
     }
 }
 
+#if wxUSE_FFILE
 wxString wxWebResponseImpl::GetDataFile() const
 {
     return m_file.GetName();
@@ -769,6 +784,7 @@ void wxWebResponseImpl::Finalize()
     if ( m_request.GetStorage() == wxWebRequest::Storage_File )
         m_file.Close();
 }
+#endif // wxUSE_FFILE
 
 //
 // wxWebResponse
@@ -868,12 +884,14 @@ wxString wxWebResponse::AsString() const
     return m_impl->AsString();
 }
 
+#if wxUSE_FFILE
 wxString wxWebResponse::GetDataFile() const
 {
     wxCHECK_IMPL( wxString() );
 
     return m_impl->GetDataFile();
 }
+#endif // wxUSE_FFILE
 
 
 //

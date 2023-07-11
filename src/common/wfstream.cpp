@@ -212,33 +212,6 @@ size_t wxTempFileOutputStream::OnSysWrite(const void *buffer, size_t size)
 }
 
 // ----------------------------------------------------------------------------
-// wxTempFFileOutputStream
-// ----------------------------------------------------------------------------
-
-wxTempFFileOutputStream::wxTempFFileOutputStream(const wxString& fileName)
-{
-    m_file = new wxTempFFile(fileName);
-
-    if (!m_file->IsOpened())
-        m_lasterror = wxSTREAM_WRITE_ERROR;
-}
-
-wxTempFFileOutputStream::~wxTempFFileOutputStream()
-{
-    if (m_file->IsOpened())
-        Discard();
-    delete m_file;
-}
-
-size_t wxTempFFileOutputStream::OnSysWrite(const void *buffer, size_t size)
-{
-    if (IsOk() && m_file->Write(buffer, size))
-        return size;
-    m_lasterror = wxSTREAM_WRITE_ERROR;
-    return 0;
-}
-
-// ----------------------------------------------------------------------------
 // wxFileStream
 // ----------------------------------------------------------------------------
 
@@ -424,6 +397,33 @@ wxFileOffset wxFFileOutputStream::GetLength() const
 bool wxFFileOutputStream::IsOk() const
 {
     return wxStreamBase::IsOk() && m_file->IsOpened();
+}
+
+// ----------------------------------------------------------------------------
+// wxTempFFileOutputStream
+// ----------------------------------------------------------------------------
+
+wxTempFFileOutputStream::wxTempFFileOutputStream(const wxString& fileName)
+{
+    m_file = new wxTempFFile(fileName);
+
+    if (!m_file->IsOpened())
+        m_lasterror = wxSTREAM_WRITE_ERROR;
+}
+
+wxTempFFileOutputStream::~wxTempFFileOutputStream()
+{
+    if (m_file->IsOpened())
+        Discard();
+    delete m_file;
+}
+
+size_t wxTempFFileOutputStream::OnSysWrite(const void *buffer, size_t size)
+{
+    if (IsOk() && m_file->Write(buffer, size))
+        return size;
+    m_lasterror = wxSTREAM_WRITE_ERROR;
+    return 0;
 }
 
 // ----------------------------------------------------------------------------
